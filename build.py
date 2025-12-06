@@ -180,7 +180,16 @@ class Build:
         ]
         if jobs:
             cmd.append(f'-j{jobs}')
-        subprocess.run(cmd, check=True, stdout=True, stderr=True)
+        # Sanitize environment compile flags so unsupported clang options
+        # (for example -Wno-nontrivial-memcall) are replaced before invoking ninja.
+        env = os.environ.copy()
+        BAD = "-Wno-nontrivial-memcall"
+        GOOD = "-Wno-nontrivial-memaccess"
+        for key in ("CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS", "ARFLAGS"):
+            v = env.get(key)
+            if v and BAD in v:
+                env[key] = v.replace(BAD, GOOD)
+        subprocess.run(cmd, check=True, stdout=True, stderr=True, env=env)
 
     def debuild(self, arch: str, output: str = None, root: str = None, **conf):
         conf = conf or self.package

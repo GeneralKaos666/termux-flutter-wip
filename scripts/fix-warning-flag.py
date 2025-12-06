@@ -16,6 +16,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import List, Tuple
 
 BAD_FLAG = "-Wno-nontrivial-memcall"
 GOOD_FLAG = "-Wno-nontrivial-memaccess"
@@ -49,7 +50,7 @@ def is_binary_file(filepath: Path) -> bool:
     return False
 
 
-def find_files_with_bad_flag(root: Path) -> list[tuple[Path, int]]:
+def find_files_with_bad_flag(root: Path) -> List[Tuple[Path, int]]:
     """Find all files containing the bad flag and count occurrences."""
     results = []
     for dirpath, dirnames, filenames in os.walk(root):

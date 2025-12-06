@@ -19,6 +19,10 @@ from pathlib import Path
 
 BAD_FLAG = "-Wno-nontrivial-memcall"
 GOOD_FLAG = "-Wno-nontrivial-memaccess"
+MAX_LINE_DISPLAY = 80  # Maximum line length to display before truncating
+
+# Type alias for file match results: (filepath, [(line_number, line_content), ...])
+FileMatch = tuple[Path, list[tuple[int, str]]]
 
 # Directories to skip
 SKIP_DIRS = {".git", "out", "__pycache__", ".cache", "node_modules"}
@@ -48,7 +52,7 @@ def is_binary_file(filepath: Path) -> bool:
     return False
 
 
-def find_files_with_flag(root: Path) -> list[tuple[Path, list[tuple[int, str]]]]:
+def find_files_with_flag(root: Path) -> list[FileMatch]:
     """Find all files containing the bad flag.
 
     Returns a list of (filepath, [(line_number, line_content), ...])
@@ -77,7 +81,7 @@ def find_files_with_flag(root: Path) -> list[tuple[Path, list[tuple[int, str]]]]
     return results
 
 
-def apply_replacements(root: Path, files: list[tuple[Path, list]]) -> list[Path]:
+def apply_replacements(root: Path, files: list[FileMatch]) -> list[Path]:
     """Apply replacements to files. Returns list of modified files."""
     modified = []
     for filepath, _ in files:
@@ -143,7 +147,7 @@ def main():
         rel_path = filepath.relative_to(repo_root)
         print(f"  {rel_path}:")
         for line_num, line_content in matches:
-            print(f"    Line {line_num}: {line_content[:80]}{'...' if len(line_content) > 80 else ''}")
+            print(f"    Line {line_num}: {line_content[:MAX_LINE_DISPLAY]}{'...' if len(line_content) > MAX_LINE_DISPLAY else ''}")
         print()
 
     if args.apply or args.commit:
